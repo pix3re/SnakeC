@@ -3,29 +3,32 @@
 #include <cstdlib>
 #include <ctime>
 #include <Windows.h>
-
-/* display prolog 
-* draw board
-* draw snake
-* draw food
-* do logic
-* draw game info
-*/
+#include <conio.h>
 
 int BOARD_WIDTH = 25;
 int BOARD_HEIGHT = 25;
 
 int FRUIT_X, FRUIT_Y;
 int SNAKE_H[2] = { BOARD_WIDTH / 2, BOARD_HEIGHT / 2 };
+int SNAKE_T[4];
+int SCORE = 0;
+
+enum SNAKE_DIRECTION { UP, DOWN, LEFT, RIGHT };
+
+SNAKE_DIRECTION currentDir = DOWN;
 
 bool initGameLoop = false;
 
 
 void displayProlog();
-// merge initBoard and Draw sanke as it has to be drawn in same loop
-void initBoard();
-void setupGameVariables();
+void drawGame();
+void handleInput();
+void handleGameLogic();
+void drawFruit();
 bool askQuestionYN(const std::string Question);
+void gameState(const bool Lost);
+void addScore();
+void drawScore();
 inline void clearScreen();
 
 int main()
@@ -35,15 +38,17 @@ int main()
 
 	if (initGameLoop)
 	{
-		setupGameVariables();
+		drawFruit();
 	}
 
 	while (initGameLoop)
 	{
 		clearScreen();
-		initBoard();
-
-		Sleep(1000);
+		drawGame();
+		drawScore();
+		handleInput();
+		handleGameLogic();
+		Sleep(300);
 	}
 
 	return 0;
@@ -57,7 +62,7 @@ void displayProlog()
 	std::cout << std::endl;
 }
 
-void setupGameVariables()
+void drawFruit()
 {
 	std::srand(std::time(0));
 
@@ -65,7 +70,7 @@ void setupGameVariables()
 	FRUIT_Y = std::rand() % BOARD_HEIGHT;
 }
 
-void initBoard()
+void drawGame()
 {
 	for (int x = 0; x <= BOARD_WIDTH; x++)
 	{
@@ -91,6 +96,86 @@ void initBoard()
 		}
 		std::cout << std::endl;
 	}
+}
+
+void handleInput()
+{
+	if (_kbhit())
+	{
+		switch (_getch())
+		{
+		case 'w':
+			currentDir = UP;
+
+			break;
+
+		case 's':
+			currentDir = DOWN;
+
+			break;
+
+		case 'a':
+			currentDir = LEFT;
+
+			break;
+
+		case 'd':
+			currentDir = RIGHT;
+
+			break;
+		}
+	}
+}
+
+void handleGameLogic()
+{
+	if (currentDir == UP)
+	{
+		SNAKE_H[0] = SNAKE_H[0] - 1;
+	}
+	else if (currentDir == DOWN)
+	{
+		SNAKE_H[0] = SNAKE_H[0] + 1;
+	}
+	else if (currentDir == LEFT)
+	{
+		SNAKE_H[1] = SNAKE_H[1] - 1;
+	}
+	else if (currentDir == RIGHT)
+	{
+		SNAKE_H[1] = SNAKE_H[1] + 1;
+	}
+
+	if (SNAKE_H[0] == FRUIT_X && SNAKE_H[1] == FRUIT_Y)
+	{
+		addScore();
+		drawFruit();
+	}
+
+	if (SNAKE_H[0] == 0 || SNAKE_H[0] == BOARD_WIDTH || SNAKE_H[1] == 0 || SNAKE_H[1] == BOARD_HEIGHT)
+	{
+		gameState(true);
+	}
+}
+
+void gameState(const bool Lost)
+{
+	if (Lost)
+	{
+		initGameLoop = false;
+		clearScreen();
+		std::cout << "YOU LOST !!!" << std::endl;
+	}
+}
+
+void addScore()
+{
+	SCORE += 10;
+}
+
+void drawScore()
+{
+	std::cout << "Score: " << SCORE << std::endl;
 }
 
 bool askQuestionYN(const std::string Question)
