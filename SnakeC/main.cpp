@@ -1,5 +1,7 @@
 #include <iostream>
 #include <string>
+#include <cstdlib>
+#include <ctime>
 #include <Windows.h>
 
 /* display prolog 
@@ -12,13 +14,17 @@
 
 int BOARD_WIDTH = 25;
 int BOARD_HEIGHT = 25;
+
+int FRUIT_X, FRUIT_Y;
+int SNAKE_H[2] = { BOARD_WIDTH / 2, BOARD_HEIGHT / 2 };
+
 bool initGameLoop = false;
 
 
 void displayProlog();
 // merge initBoard and Draw sanke as it has to be drawn in same loop
 void initBoard();
-void drawSnake();
+void setupGameVariables();
 bool askQuestionYN(const std::string Question);
 inline void clearScreen();
 
@@ -27,11 +33,15 @@ int main()
 	displayProlog();
 	initGameLoop = askQuestionYN("Do you wish to start game?");
 
+	if (initGameLoop)
+	{
+		setupGameVariables();
+	}
+
 	while (initGameLoop)
 	{
 		clearScreen();
 		initBoard();
-		drawSnake();
 
 		Sleep(1000);
 	}
@@ -47,9 +57,12 @@ void displayProlog()
 	std::cout << std::endl;
 }
 
-void drawSnake()
+void setupGameVariables()
 {
-	std::cout << "@";
+	std::srand(std::time(0));
+
+	FRUIT_X = std::rand() % BOARD_WIDTH;
+	FRUIT_Y = std::rand() % BOARD_HEIGHT;
 }
 
 void initBoard()
@@ -62,6 +75,14 @@ void initBoard()
 			if (y == 0 || y == BOARD_HEIGHT || x == 0 || x == BOARD_WIDTH)
 			{
 				std::cout << "#";
+			}
+			else if (SNAKE_H[0] == x && SNAKE_H[1] == y)
+			{
+				std::cout << "@";
+			}
+			else if (FRUIT_X == x && FRUIT_Y == y)
+			{
+				std::cout << "F";
 			}
 			else
 			{
